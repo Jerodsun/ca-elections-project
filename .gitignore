@@ -1,3 +1,8 @@
+# ignore these files because too big to upload
+201411cv.txt
+20161108cv.txt
+20181106cv.txt
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
