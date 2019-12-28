@@ -3,6 +3,9 @@
 20161108cv.txt
 20181106cv.txt
 
+# add business logic to raw_resources
+precinct_2018_ca.csv
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
