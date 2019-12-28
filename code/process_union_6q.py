@@ -15,7 +15,7 @@ Union table: calculate new area of union v_area
 Set logic: The census one theoretically covers the entire census area 
 (or if not no way of telling at this point right?)
 
-Calculate new field: pct_precinct: v_area / p_area 
+Calculate new field: pct_whole: v_area / p_area 
 Percent of the precinct - we will use that to mask over the precinct results.
 
 Then we're done and export.
@@ -28,38 +28,40 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-# Import census demographic data
+# Import census demographic data - this is the arcgis version
 census = pd.read_csv('census_arcgis_ca.csv', encoding='latin-1')
 
 # Import QGIS combined tracts
 df = pd.read_csv('census_precinct_min.csv')
 
-#pct16_reduc has the county code appended
-df['pct_precinct'] = df['area_v']/df['area_p']
+#calculate coverage % of each row over the whole census area
+df['pct_whole'] = df['area_v']/df['area_p']
 
 #filter out null values - 2 % is arbitrary, negative offset
-df_reduc = df[df['pct_precinct'] > 0.02]
+df_reduc = df[df['pct_whole'] > 0.02]
 
 # Import precinct election results, 2016 all
 election = pd.read_csv('all_precinct_results_2016.csv')
 
+# Working subset
 election_tmp = election[['pct16', 'pres_clinton', 'pres_trump', 'ussenate_harris', 'ussenate_sanchez']]
+election_tmp = election_tmp.iloc[:24568] # remove precinct summations for now
 
-election_tmp = election_tmp.iloc[:24568] # hack to remove row summations
-
-
-election_tmp['state_ic'] = election_tmp['pct16'].str[:3]
-election_tmp['state_ic'] = election_tmp['state_ic'].astype(int)
-election_tmp['PCT'] = election_tmp['pct16'].str[4:]
-
+# Not sure if still need this?
+# election_tmp['state_ic'] = election_tmp['pct16'].str[:3]
+# election_tmp['state_ic'] = election_tmp['state_ic'].astype(int)
+# election_tmp['PCT'] = election_tmp['pct16'].str[4:]
 
 # Merge QGIS with precincts
-mergers = df_reduc.merge(election_tmp, on="pct16")
+cen_to_precinct = df_reduc.merge(election_tmp, on="pct16")
+
+# Mergers is one-to-many; QGIS combined tracts is from census to precinct.
 
 # Take slice only for now; this is duplicable
 # Apply pct_precinct scaling for each precinct in census tract
-manip = mergers.copy()
-manip[['clinton', 'trump', 'harris', 'sanchez']] = mergers[['pres_clinton', 'pres_trump', 'ussenate_harris', 'ussenate_sanchez']].multiply(mergers['pct_precinct'], axis="index")
+# This creates new columns reflecting the census tract (OBJECTID) percent of the
+manip = cen_to_precinct.copy()
+manip[['clinton', 'trump', 'harris', 'sanchez']] = cen_to_precinct[['pres_clinton', 'pres_trump', 'ussenate_harris', 'ussenate_sanchez']].multiply(cen_to_precinct['pct_whole'], axis="index")
 
 # GROUPBY to combine
 test = manip.groupby(['OBJECTID'])[['clinton', 'trump', 'harris', 'sanchez', 'v_area']].sum().reset_index()
