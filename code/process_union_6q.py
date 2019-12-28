@@ -57,10 +57,10 @@ manip[['clinton', 'trump', 'harris', 'sanchez']] = cen_to_precinct[['pres_clinto
 # GROUPBY census block group and combine
 test = manip.groupby(['OBJECTID'])[['clinton', 'trump', 'harris', 'sanchez', 'v_area']].sum().reset_index()
 
-len(test) # 22827
-len(census) # 23194 Throughout the QGIS process this is the census block group count that failed to match
-# Now merge with census data.
+# len(test) # 22827
+# len(census) # 23194 Throughout the QGIS process this is the census block group count that failed to match
 
+# Now merge with census data.
 output = test.merge(census, on=['OBJECTID'])
 
 output['pct_hispanic'] = output['HISPANIC']/output['POP2010']

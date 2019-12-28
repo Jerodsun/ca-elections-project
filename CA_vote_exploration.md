@@ -59,11 +59,11 @@ In Python:
 
 #### Census Shapefiles:
 - Direct from the Census Bureau: `tl_2017_06_tract` [link](https://www.census.gov/cgi-bin/geo/shapefiles/index.php)
-- Arcgis __Block__ Census Data (comes with a subset of demographic data) converted into Shapefiles.
+- Arcgis __Block Group__ Census Data (comes with a subset of demographic data) converted into Shapefiles.
 
 #### Census Data:
-- Census Data Downloaded directly from Census Bureau
-- Alternative: ArcGIS __Block__ Census Data
+- 2017 ACS Census Data from [IPUMS](https://data2.nhgis.org/) Block Group & Tract (archive version A)
+- Alternative: ArcGIS __Block Group__ Census Data
 
 There are 8,507 Census Tracts and 23,194 Block Groups in California. Block groups are the smallest tranche for which data is published.
 
