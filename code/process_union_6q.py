@@ -11,7 +11,7 @@ Have 2 tables/shapefiles: census and precincts
 Calculate new area for both
 Union CENSUS to PRECINCT
 
-Union table: calculate new area of union v_area
+Union table: calculate new area of union area_v
 """
 
 import pandas as pd
@@ -53,23 +53,24 @@ cen_to_precinct = df_reduc.merge(election_tmp, on="pct16")
 
 # Take slice only for now; this is duplicable
 # Apply pct_whole scaling for each slice in census block group
-# This creates new columns reflecting the census block group (OBJECTID) percent of the
+# This creates new columns scaled by precinct coverage of the census block group.
 manip = cen_to_precinct.copy()
 manip[['clinton', 'trump', 'harris', 'sanchez']] = cen_to_precinct[['pres_clinton', 'pres_trump', 'ussenate_harris', 'ussenate_sanchez']].multiply(cen_to_precinct['pct_whole'], axis="index")
 
 # GROUPBY census block group and combine
-test = manip.groupby(['OBJECTID'])[['clinton', 'trump', 'harris', 'sanchez', 'v_area']].sum().reset_index()
+test = manip.groupby(['OBJECTID'])[['clinton', 'trump', 'harris', 'sanchez', 'area_v']].sum().reset_index()
 
 # len(test) # 22827
 # len(census) # 23194 Throughout the QGIS process this is the census block group count that failed to match
 
-# Now merge with census data.
+# Now merge with ArcGIS census data.
 output = test.merge(census, on=['OBJECTID'])
 
 output['pct_hispanic'] = output['HISPANIC']/output['POP2010']
 output['pct_sanchez'] = output['sanchez']/(output['harris'] + output['sanchez'])
 output['pct_trump'] = output['trump']/(output['trump'] + output['clinton'])
-output['pct_non_h_white'] = ( output['WHITE'] - output['HISPANIC'] ) /output['POP2010']
+
+#census['sum_pop'] = census['WHITE']+census['BLACK']+census['AMERI_ES']+census['ASIAN']+census['HAWN_PI']+census['OTHER']+census['MULT_RACE'] #+census['HISPANIC']
 
 output_sig = output[(output['clinton'] > 10) & (output['trump'] > 10)]
 
@@ -114,10 +115,10 @@ sd = output[output['CNTY_FIPS'] == 73]
 #plt.ylabel('Percent vote for Trump')
 #
 #
-#
+# This is the wrong calculation
 #plt.title('2016 Election Exploration')
-#plt.scatter(output['pct_non_h_white'], output['pct_trump'])
-#plt.xlabel('Percent Non Hispanic White')
+#plt.scatter(output['pct_hispanic'], output['pct_trump'])
+#plt.xlabel('Percent Hispanic')
 #plt.ylabel('Percent vote for Trump')
 
 output[['clinton', 'trump', 'harris', 'sanchez']].sum() # slippage count
