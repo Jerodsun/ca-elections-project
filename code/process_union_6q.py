@@ -37,10 +37,11 @@ df = pd.read_csv('census_precinct_min.csv')
 #pct16_reduc has the county code appended
 df['pct_precinct'] = df['area_v']/df['area_p']
 
+#filter out null values - 2 % is arbitrary, negative offset
 df_reduc = df[df['pct_precinct'] > 0.02]
 
 # Import precinct election results, 2016 all
-election = pd.read_csv('2018-election-data/all_precinct_results_2016.csv')
+election = pd.read_csv('all_precinct_results_2016.csv')
 
 election_tmp = election[['pct16', 'pres_clinton', 'pres_trump', 'ussenate_harris', 'ussenate_sanchez']]
 
