@@ -12,15 +12,6 @@ Calculate new area for both
 Union CENSUS to PRECINCT
 
 Union table: calculate new area of union v_area
-Set logic: The census one theoretically covers the entire census area 
-(or if not no way of telling at this point right?)
-
-Calculate new field: pct_whole: v_area / p_area 
-Percent of the precinct - we will use that to mask over the precinct results.
-
-Then we're done and export.
-
-Name is not distinct. select distinct NAMELSAD, COUNTYFP from census_tract_area;
 """
 
 import pandas as pd
@@ -31,7 +22,7 @@ import numpy as np
 # Import census demographic data - this is the arcgis version
 census = pd.read_csv('census_arcgis_ca.csv', encoding='latin-1')
 
-# Import QGIS combined tracts
+# Import QGIS combined block group
 df = pd.read_csv('census_precinct_min.csv')
 
 #calculate coverage % of each row over the whole census area
@@ -55,17 +46,19 @@ election_tmp = election_tmp.iloc[:24568] # remove precinct summations for now
 # Merge QGIS with precincts
 cen_to_precinct = df_reduc.merge(election_tmp, on="pct16")
 
-# Mergers is one-to-many; QGIS combined tracts is from census to precinct.
+# Mergers is one-to-many; QGIS combined block group is from census to precinct.
 
 # Take slice only for now; this is duplicable
-# Apply pct_precinct scaling for each precinct in census tract
-# This creates new columns reflecting the census tract (OBJECTID) percent of the
+# Apply pct_whole scaling for each slice in census block group
+# This creates new columns reflecting the census block group (OBJECTID) percent of the
 manip = cen_to_precinct.copy()
 manip[['clinton', 'trump', 'harris', 'sanchez']] = cen_to_precinct[['pres_clinton', 'pres_trump', 'ussenate_harris', 'ussenate_sanchez']].multiply(cen_to_precinct['pct_whole'], axis="index")
 
-# GROUPBY to combine
+# GROUPBY census block group and combine
 test = manip.groupby(['OBJECTID'])[['clinton', 'trump', 'harris', 'sanchez', 'v_area']].sum().reset_index()
 
+len(test) # 22827
+len(census) # 23194 Throughout the QGIS process this is the census block group count that failed to match
 # Now merge with census data.
 
 output = test.merge(census, on=['OBJECTID'])
