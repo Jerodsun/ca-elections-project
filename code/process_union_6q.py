@@ -22,6 +22,9 @@ import numpy as np
 # Import census demographic data - this is the arcgis version
 census = pd.read_csv('census_arcgis_ca.csv', encoding='latin-1')
 
+# Import census demographic data - this is the 2017 ACS version
+# census = pd.read_csv('census_block_demographic.csv', skiprows=1)
+
 # Import QGIS combined block group
 df = pd.read_csv('census_precinct_min.csv')
 
